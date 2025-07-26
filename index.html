@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>فرم مجوز کار</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+font-family: sans-serif;
+background-color: #f5f5f5;
+direction: rtl;
+padding: 20px;
+}
+.form-container {
+max-width: 600px;
+margin: auto;
+background: white;
+padding: 20px;
+border-radius: 12px;
+box-shadow: 0 0 10px rgba(0,0,0,0.1);
+display: grid;
+grid-template-columns: 120px 1fr;
+gap: 12px 16px;
+}
+label {
+align-self: center;
+}
+input, select, textarea {
+width: 100%;
+padding: 8px;
+border: 1px solid #ccc;
+border-radius: 6px;
+}
+button {
+grid-column: span 2;
+padding: 10px;
+background-color: #28a745;
+color: white;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+}
+button:hover {
+background-color: #218838;
+}
+.result {
+margin-top: 15px;
+color: green;
+white-space: pre-line;
+}
+@media (max-width: 600px) {
+.form-container {
+grid-template-columns: 1fr;
+}
+}
+</style>
+</head>
+<body>
+
+<h2>فرم ثبت مجوز کار</h2>
+<form id="permitForm" class="form-container">
+<label>تاریخ:</label>
+<input type="date" name="date" required>
+
+<label>واحد:</label>
+<select name="unit" required>
+<option value="">انتخاب کنید</option>
+<option>آمونیاک</option>
+<option>یوتیلیتی</option>
+</select>
+
+<label>شیفت:</label>
+<select name="shift" id="shift" onchange="updateSupervisors()" required>
+<option value="">انتخاب کنید</option>
+<option value="A">A</option>
+<option value="B">B</option>
+<option value="C">C</option>
+</select>
+
+<label>شماره سریال:</label>
+<input type="text" name="serial" required>
+
+<label>شرح کار:</label>
+<textarea name="description" rows="3" required></textarea>
+
+<label>سرپرست تاسیسات:</label>
+<select name="supervisor" id="supervisor" required></select>
+
+<label>شرکت:</label>
+<select name="company" required>
+<option value="">انتخاب کنید</option>
+<option>هنگام</option>
+<option>سنااندیشه</option>
+</select>
+
+<label>نوع پرمیت:</label>
+<select name="permitType" required>
+<option value="">انتخاب کنید</option>
+<option>سرد</option>
+<option>گرم</option>
+</select>
+
+<button type="submit">ثبت مجوز</button>
+</form>
+
+<div class="result" id="result"></div>
+
+<script>
+const supervisorsMap = {
+A: ["احمد", "مرتضی", "حمید"],
+B: ["رضا", "جواد", "مجتبی"],
+C: ["حسین", "یاسر", "نادر"]
+};
+
+function updateSupervisors() {
+const shift = document.getElementById("shift").value;
+const supervisorSelect = document.getElementById("supervisor");
+supervisorSelect.innerHTML = "";
+if (supervisorsMap[shift]) {
+supervisorsMap[shift].forEach(name => {
+const opt = document.createElement("option");
+opt.value = name;
+opt.textContent = name;
+supervisorSelect.appendChild(opt);
+});
+}
+}
+
+document.getElementById("permitForm").addEventListener("submit", function(e) {
+e.preventDefault();
+const formData = new FormData(this);
+const data = Object.fromEntries(formData.entries());
+
+fetch("https://script.google.com/macros/s/AKfycby52kypkJSluyxBFYkhVuzqcWQbtaKjMxDuIEgQecjLlO0WSThkEWx6ahPcN4kotAYh/exec", {
+method: "POST",
+body: JSON.stringify(data),
+headers: {
+"Content-Type": "application/json"
+}
+})
+.then(res => res.text())
+.then(msg => {
+document.getElementById("result").textContent = msg;
+this.reset();
+document.getElementById("supervisor").innerHTML = "";
+})
+.catch(err => {
+document.getElementById("result").textContent = "❌ خطا در ارسال: " + err.message;
+});
+});
+</script>
+
+</body>
+</html>
